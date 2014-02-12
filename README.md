@@ -1,5 +1,5 @@
 SkiDryer
 ========
 
-An OpenSCAD project for a dryer for skys and other mountain stuffs
+An OpenSCAD project for a dryer for skis and other mountain stuffs
 
