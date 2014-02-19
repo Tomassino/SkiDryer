@@ -31,7 +31,7 @@ module sd_lowerBase()
  */
 module sd_upperBase()
 {
-	sd_woodenPlaneWithHoles([sd_baseWidth, sd_baseDepth, sd_planesThickness], [[sd_skiHolePos, 0, sd_skiHoleWidth, sd_skiHoleDepth]], [[sd_externalVerticalBarPosition, 0, sd_aluminiumBarRadius], [sd_internalVerticalBarPosition, 0, sd_aluminiumBarRadius]]);
+	sd_woodenPlaneWithHoles([sd_baseWidth, sd_baseDepth, sd_planesThickness], [[sd_skiHolePos, 0, sd_skiHoleWidth, sd_skiHoleDepth]], [[sd_externalVerticalBarPosition, 0, sd_aluminiumBarSectionSize / 2], [sd_internalVerticalBarPosition, 0, sd_aluminiumBarSectionSize / 2]]);
 }
 
 /**
@@ -48,7 +48,7 @@ module sd_leg()
  */
 module sd_internalVerticalBar()
 {
-	sd_emptyAluminiumRodWithHoles(sd_verticalBarLength, sd_aluminiumBarRadius, sd_aluminiumBarThickness, "z");
+	sd_emptyAluminiumRodWithHoles(sd_verticalBarLength, sd_aluminiumBarSectionSize, sd_aluminiumBarThickness, sd_aluminiumVerticalBarSection, "z");
 }
 
 /**
@@ -59,8 +59,8 @@ module sd_externalVerticalBar()
 // 	function sd_makeHoleForHook(h) = [sd_hookRadius, h[0], h[1], true];
 // 	function sd_makeHolesForHooks(h, i = 0) = (i == (len(h) - 1) ? sd_makeHoleForHook(h[i]) : concat(sd_makeHoleForHook(h[i]), sd_makeHolesForHooks(h, i + 1)));
 // 	holes = sd_makeHolesForHooks(sd_hookPositionsOnExternalVerticalBar);
-// 	sd_emptyAluminiumRodWithHoles(sd_verticalBarLength, sd_aluminiumBarRadius, sd_aluminiumBarThickness, "z", holes);
-	sd_emptyAluminiumRodWithHoles(sd_verticalBarLength, sd_aluminiumBarRadius, sd_aluminiumBarThickness, "z", sd_TMP_holes);
+// 	sd_emptyAluminiumRodWithHoles(sd_verticalBarLength, sd_aluminiumBarSectionSize, sd_aluminiumBarThickness,  sd_aluminiumVerticalBarSection, "z", holes);
+	sd_emptyAluminiumRodWithHoles(sd_verticalBarLength, sd_aluminiumBarSectionSize, sd_aluminiumBarThickness,  sd_aluminiumVerticalBarSection, "z", sd_TMP_holes);
 }
 
 /**
@@ -68,7 +68,7 @@ module sd_externalVerticalBar()
  */
 module sd_horizontalBar()
 {
-	sd_emptyAluminiumRodWithHoles(sd_horizontalBarLength, sd_aluminiumBarRadius, sd_aluminiumBarThickness, "x");
+	sd_emptyAluminiumRodWithHoles(sd_horizontalBarLength, sd_aluminiumBarSectionSize, sd_aluminiumBarThickness,  sd_aluminiumVerticalBarSection, "x");
 }
 
 /**
@@ -79,7 +79,7 @@ module sd_horizontalBar()
  */
 module sd_verticalBarLowerBaseSupport()
 {
-	sd_woodenPlaneWithHoles([sd_verticalBarLowerBaseSupportShortSide, sd_verticalBarLowerBaseSupportLongSide, sd_verticalBarLowerBaseSupportThickness], [], [[0, 0, sd_aluminiumBarRadius]]);
+	sd_woodenPlaneWithHoles([sd_verticalBarLowerBaseSupportShortSide, sd_verticalBarLowerBaseSupportLongSide, sd_verticalBarLowerBaseSupportThickness], [], [[0, 0, sd_aluminiumBarSectionSize / 2]]);
 }
 
 /**
@@ -99,7 +99,7 @@ module sd_lowerSkiSupport()
  */
 module sd_upperSkiSupport()
 {
-	sd_emptyAluminiumRodWithHoles(sd_skiHoleDepth, sd_aluminiumBarRadius, sd_aluminiumBarThickness, "y");
+	sd_emptyAluminiumRodWithHoles(sd_skiHoleDepth, sd_aluminiumBarSectionSize, sd_aluminiumBarThickness,  sd_aluminiumVerticalBarSection, "y");
 }
 
 /**
@@ -198,12 +198,17 @@ sd_legGrooveDepth = 10;
 /**
  * \brief The external radius of the vertical bar
  */
-sd_aluminiumBarRadius = 15;
+sd_aluminiumBarSectionSize = 30;
 
 /**
  * \brief The thickness of the vertical bar
  */
 sd_aluminiumBarThickness = 1;
+
+/**
+ * \brief The external radius of the vertical bar
+ */
+sd_aluminiumVerticalBarSection = "round";
 
 /**
  * \brief The length of the vertical bar
@@ -227,13 +232,13 @@ sd_verticalBarDistanceFromBorder = 70;
  * \brief The position of the center of the most external vertical bar on the
  *        base
  */
-sd_externalVerticalBarPosition = -((sd_baseWidth / 2) - sd_verticalBarDistanceFromBorder - sd_aluminiumBarRadius);
+sd_externalVerticalBarPosition = -((sd_baseWidth / 2) - sd_verticalBarDistanceFromBorder - (sd_aluminiumBarSectionSize / 2));
 
 /**
  * \brief The position of the center of the most internal vertical bar on the
  *        base
  */
-sd_internalVerticalBarPosition = sd_externalVerticalBarPosition + sd_horizontalBarLength - 2 * sd_aluminiumBarRadius;
+sd_internalVerticalBarPosition = sd_externalVerticalBarPosition + sd_horizontalBarLength - sd_aluminiumBarSectionSize;
 
 /**
  * \brief The thickiness of the support for the vertical bar on the lower base
@@ -265,21 +270,14 @@ sd_verticalBarLowerBaseSupportLongSide = 150;
 sd_lowerSkiSupportSide = 60;
 
 /**
- * \brief The vector with positions of the upper ski support
- *
- * Each element is an height from the upper face of the lower base position
- */
-sd_upperSkiSupportsPositions = [500, 850, 1200];
-
-/**
  * \brief The distance from the center of the hook to the non-bent tip
  */
-sd_hookDistanceFromCenterToNonBentTip = sd_aluminiumBarRadius;
+sd_hookDistanceFromCenterToNonBentTip = sd_aluminiumBarSectionSize;
 
 /**
  * \brief The distance from the center of the hook to the bending
  */
-sd_hookDistanceFromCenterToBending = sd_aluminiumBarRadius + 30;
+sd_hookDistanceFromCenterToBending = sd_aluminiumBarSectionSize + 30;
 
 /**
  * \brief The total length of the non-bent part of the hook
@@ -302,7 +300,7 @@ sd_hookRadius = 3;
  * Each position is a couple [p, a] there p is the distance from the upper face
  * of the lower base and a is the angle around the vertical bar
  */
-sd_hookPositionsOnExternalVerticalBar = [[500, 90], [850, -90], [1200, 0]];
+sd_hookPositionsOnExternalVerticalBar = [[800, 90], [950, -90], [1200, 0]];
 
 /**
  * \brief The position of holes in the vertical bar for hooks
@@ -313,7 +311,14 @@ sd_hookPositionsOnExternalVerticalBar = [[500, 90], [850, -90], [1200, 0]];
  * NEW OPENSCAD, THIS CAN BE REMOVED AND COMPUTED IN THE
  * sd_externalVerticalBar() (THE CODE IS NOW COMMENTED OUT)
  */
-sd_TMP_holes = [[sd_hookRadius, 500 - sd_verticalBarLength / 2 - sd_planesThickness, 90 + 90, true], [sd_hookRadius, 850 - sd_verticalBarLength / 2 - sd_planesThickness, -90 + 90, true], [sd_hookRadius, 1200 - sd_verticalBarLength / 2 - sd_planesThickness, 0 + 90, true]];
+sd_TMP_holes = [[sd_hookRadius, 800 - sd_verticalBarLength / 2 - sd_planesThickness, 90 + 90, true], [sd_hookRadius, 950 - sd_verticalBarLength / 2 - sd_planesThickness, -90 + 90, true], [sd_hookRadius, 1200 - sd_verticalBarLength / 2 - sd_planesThickness, 0 + 90, true]];
+
+/**
+ * \brief The vector with positions of the upper ski support
+ *
+ * Each element is an height from the upper face of the lower base position
+ */
+sd_upperSkiSupportsPositions = [500, 850, 1200];
 
 // The following lines are left here as an example
 
@@ -327,11 +332,11 @@ sd_TMP_holes = [[sd_hookRadius, 500 - sd_verticalBarLength / 2 - sd_planesThickn
 	sd_leg();
 }
 
-* translate([sd_baseWidth + sd_aluminiumBarRadius * 10, 0, 0]) {
+* translate([sd_baseWidth + sd_aluminiumBarSectionSize * 10, 0, 0]) {
 	sd_internalVerticalBar();
 }
 
-* translate([-sd_baseWidth - sd_aluminiumBarRadius * 10, -sd_baseWidth, 0]) {
+* translate([-sd_baseWidth - sd_aluminiumBarSectionSize * 10, -sd_baseWidth, 0]) {
 	sd_externalVerticalBar();
 }
 
@@ -343,14 +348,14 @@ sd_TMP_holes = [[sd_hookRadius, 500 - sd_verticalBarLength / 2 - sd_planesThickn
 	sd_verticalBarLowerBaseSupport();
 }
 
-* translate([sd_baseWidth + sd_aluminiumBarRadius * 10, -sd_baseWidth, 0]) {
+* translate([sd_baseWidth + sd_aluminiumBarSectionSize * 10, -sd_baseWidth, 0]) {
 	sd_lowerSkiSupport();
 }
 
-* translate([sd_baseWidth + sd_aluminiumBarRadius * 10, sd_baseWidth, 0]) {
+* translate([sd_baseWidth + sd_aluminiumBarSectionSize * 10, sd_baseWidth, 0]) {
 	sd_upperSkiSupport();
 }
 
-* translate([-sd_baseWidth - sd_aluminiumBarRadius * 10, sd_baseWidth, 0]) {
+* translate([-sd_baseWidth - sd_aluminiumBarSectionSize * 10, sd_baseWidth, 0]) {
 	sd_hookOnVerticalBar();
 }

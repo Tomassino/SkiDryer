@@ -18,6 +18,11 @@ sd_woodColor = "SaddleBrown";
 sd_aluminiumColor = "Silver";
 
 /**
+ * \brief The color used for mounting parts (bolts, nuts, ...)
+ */
+sd_mountingPartsColor = "SteelBlue";
+
+/**
  * \brief Constructs a wooden plane
  *
  * This is simply a cube with the given dimensions which is centered and
@@ -136,28 +141,45 @@ module sd_woodenStick(height, thickness, length, xAxis = true)
 /**
  * \brief Creates an aluminium rod
  *
- * Creates an aluminium rod along the given axis. The rod has a cylindrical
- * shape
+ * Creates an aluminium rod along the given axis. The rod has a circular or
+ * square section
  * \param length the length of the rod
- * \param radius the radius of the rod
+ * \param sectionSize the diameter of the rod (if it is circular) or the length
+ *                    of the side (if it is square)
+ * \param section either "round" or "square", respectively for a circular or
+ *                square section
  * \param axis the axis along which the rod is created. This is either "x", "y"
  *             or "z"
  */
-module sd_filledAluminiumRod(length, radius, axis = "x")
+module sd_filledAluminiumRod(length, sectionSize, section = "round", axis = "x")
 {
 	color(sd_aluminiumColor) {
-		if (axis == "x") {
-			rotate(a = 90, v = [0, 1, 0]) {
-				cylinder(h = length, r = radius, center = true, $fn=20);
+		if (section == "round") {
+			if (axis == "x") {
+				rotate(a = 90, v = [0, 1, 0]) {
+					cylinder(h = length, r = sectionSize / 2, center = true, $fn=20);
+				}
+			} else if (axis == "y") {
+				rotate(a = 90, v = [1, 0, 0]) {
+					cylinder(h = length, r = sectionSize / 2, center = true, $fn=20);
+				}
+			} else if (axis == "z") {
+				cylinder(h = length, r = sectionSize / 2, center = true, $fn=20);
+			} else {
+				echo("Wrong axis specification in sd_filledAluminiumRod");
 			}
-		} else if (axis == "y") {
-			rotate(a = 90, v = [1, 0, 0]) {
-				cylinder(h = length, r = radius, center = true, $fn=20);
+		} else if (section == "square") {
+			if (axis == "x") {
+				cube([length, sectionSize, sectionSize], center = true);
+			} else if (axis == "y") {
+				cube([sectionSize, length, sectionSize], center = true);
+			} else if (axis == "z") {
+				cube([sectionSize, sectionSize, length], center = true);
+			} else {
+				echo("Wrong axis specification in sd_filledAluminiumRod");
 			}
-		} else if (axis == "z") {
-			cylinder(h = length, r = radius, center = true, $fn=20);
 		} else {
-			echo("Wrong axis specification");
+			echo("Wrong section specification in sd_filledAluminiumRod");
 		}
 	}
 }
@@ -165,38 +187,64 @@ module sd_filledAluminiumRod(length, radius, axis = "x")
 /**
  * \brief Creates an aluminium rod
  *
- * Creates an aluminium rod along the given axis. The rod has a cylindrical
- * shape and is empty inside
+ * Creates an aluminium rod along the given axis. The rod has a circular or
+ * square section and is empty inside
  * \param length the length of the rod
- * \param radius the external radius of the rod
+ * \param sectionSize the diameter of the rod (if it is circular) or the length
+ *                    of the side (if it is square)
  * \param thickness the thickness of the material of the rod
+ * \param section either "round" or "square", respectively for a circular or
+ *                square section
  * \param axis the axis along which the rod is created. This is either "x", "y"
  *             or "z"
  */
-module sd_emptyAluminiumRod(length, radius, thickness, axis = "x")
+module sd_emptyAluminiumRod(length, sectionSize, thickness, section = "round", axis = "x")
 {
 	color(sd_aluminiumColor) {
-		if (axis == "x") {
-			rotate(a = 90, v = [0, 1, 0]) {
-				difference() {
-					cylinder(h = length, r = radius, center = true, $fn=20);
-					cylinder(h = length * 2, r = radius - thickness, center = true, $fn=20);
+		if (section == "round") {
+			if (axis == "x") {
+				rotate(a = 90, v = [0, 1, 0]) {
+					difference() {
+						cylinder(h = length, r = sectionSize / 2, center = true, $fn=20);
+						cylinder(h = length * 2, r = (sectionSize / 2) - thickness, center = true, $fn=20);
+					}
 				}
-			}
-		} else if (axis == "y") {
-			rotate(a = 90, v = [1, 0, 0]) {
-				difference() {
-					cylinder(h = length, r = radius, center = true, $fn=20);
-					cylinder(h = length * 2, r = radius - thickness, center = true, $fn=20);
+			} else if (axis == "y") {
+				rotate(a = 90, v = [1, 0, 0]) {
+					difference() {
+						cylinder(h = length, r = sectionSize / 2, center = true, $fn=20);
+						cylinder(h = length * 2, r = (sectionSize / 2) - thickness, center = true, $fn=20);
+					}
 				}
+			} else if (axis == "z") {
+				difference() {
+					cylinder(h = length, r = sectionSize / 2, center = true, $fn=20);
+					cylinder(h = length * 2, r = (sectionSize / 2) - thickness, center = true, $fn=20);
+				}
+			} else {
+				echo("Wrong axis specification in sd_emptyAluminiumRod");
 			}
-		} else if (axis == "z") {
-			difference() {
-				cylinder(h = length, r = radius, center = true, $fn=20);
-				cylinder(h = length * 2, r = radius - thickness, center = true, $fn=20);
+		} else if (section == "square") {
+			if (axis == "x") {
+				difference() {
+					cube([length, sectionSize, sectionSize], center = true);
+					cube([length * 2, sectionSize - (thickness * 2), sectionSize - (thickness * 2)], center = true);
+				}
+			} else if (axis == "y") {
+				difference() {
+					cube([sectionSize, length, sectionSize], center = true);
+					cube([sectionSize - (thickness * 2), length * 2, sectionSize - (thickness * 2)], center = true);
+				}
+			} else if (axis == "z") {
+				difference() {
+					cube([sectionSize, sectionSize, length], center = true);
+					cube([sectionSize - (thickness * 2), sectionSize - (thickness * 2), length * 2], center = true);
+				}
+			} else {
+				echo("Wrong axis specification in sd_emptyAluminiumRod");
 			}
 		} else {
-			echo("Wrong axis specification");
+			echo("Wrong section specification in sd_emptyAluminiumRod");
 		}
 	}
 }
@@ -206,7 +254,10 @@ module sd_emptyAluminiumRod(length, radius, thickness, axis = "x")
  *
  * This creates an aluminium rod with round holes
  * \param length the length of the rod
- * \param radius the external radius of the rod
+ * \param sectionSize the diameter of the rod (if it is circular) or the length
+ *                    of the side (if it is square)
+ * \param section either "round" or "square", respectively for a circular or
+ *                square section
  * \param axis the axis along which the rod is created. This is either "x", "y"
  *             or "z"
  * \param holes the list of holes. Each hole is a list of three elements
@@ -214,28 +265,28 @@ module sd_emptyAluminiumRod(length, radius, thickness, axis = "x")
  *              along the rod axis (p = 0 means the center of the rod) and a is
  *              the angle around the rod
  */
-module sd_filledAluminiumRodWithHoles(length, radius, axis = "x", holes = [])
+module sd_filledAluminiumRodWithHoles(length, sectionSize, section = "round", axis = "x", holes = [])
 {
 	difference() {
-		sd_filledAluminiumRod(length, radius, axis);
+		sd_filledAluminiumRod(length, sectionSize, section, axis);
 		for (hole = holes) {
 			if (axis == "x") {
 				rotate(a = hole[2], v = [1, 0, 0]) {
 					translate([hole[1], 0, 0]) {
-						cylinder(h = radius * 4, r = hole[0], center = true, $fn=20);
+						cylinder(h = sectionSize * 2, r = hole[0], center = true, $fn=20);
 					}
 				}
 			} else if (axis == "y") {
 				rotate(a = 90 + hole[2], v = [0, 1, 0]) {
 					translate([0, hole[1], 0]) {
-						cylinder(h = radius * 4, r = hole[0], center = true, $fn=20);
+						cylinder(h = sectionSize * 2, r = hole[0], center = true, $fn=20);
 					}
 				}
 			} else if (axis == "z") {
 				rotate(a = 90, v = [1, 0, 0]) {
 					rotate(a = hole[2], v = [0, 1, 0]) {
 						translate([0, hole[1], 0]) {
-							cylinder(h = radius * 4, r = hole[0], center = true, $fn=20);
+							cylinder(h = sectionSize * 2, r = hole[0], center = true, $fn=20);
 						}
 					}
 				}
@@ -251,7 +302,11 @@ module sd_filledAluminiumRodWithHoles(length, radius, axis = "x", holes = [])
  *
  * This creates an empty aluminium rod with round holes
  * \param length the length of the rod
- * \param radius the radius of the rod
+ * \param sectionSize the diameter of the rod (if it is circular) or the length
+ *                    of the side (if it is square)
+ * \param thickness the thickness of the material of the rod
+ * \param section either "round" or "square", respectively for a circular or
+ *                square section
  * \param thickness the thickness of the material of the rod
  * \param axis the axis along which the rod is created. This is either "x", "y"
  *             or "z"
@@ -263,28 +318,28 @@ module sd_filledAluminiumRodWithHoles(length, radius, axis = "x", holes = [])
  *              holes on th eopposite sides of the rod), otherwise only one hole
  *              is done
  */
-module sd_emptyAluminiumRodWithHoles(length, radius, thickness, axis = "x", holes = [])
+module sd_emptyAluminiumRodWithHoles(length, sectionSize, thickness, section = "round", axis = "x", holes = [])
 {
 	difference() {
-		sd_emptyAluminiumRod(length, radius, thickness, axis);
+		sd_emptyAluminiumRod(length, sectionSize, thickness, section, axis);
 		for (hole = holes) {
 			if (axis == "x") {
 				rotate(a = hole[2], v = [1, 0, 0]) {
-					translate([hole[1], 0, ((hole[3] == true) ? 0 : radius)]) {
-						cylinder(h = ((hole[3] == true) ? radius * 4 : radius * 2), r = hole[0], center = true, $fn=20);
+					translate([hole[1], 0, ((hole[3] == true) ? 0 : sectionSize / 2)]) {
+						cylinder(h = ((hole[3] == true) ? sectionSize * 2 : sectionSize), r = hole[0], center = true, $fn=20);
 					}
 				}
 			} else if (axis == "y") {
 				rotate(a = 90 + hole[2], v = [0, 1, 0]) {
-					translate([0, hole[1], ((hole[3] == true) ? 0 : radius)]) {
-						cylinder(h = ((hole[3] == true) ? radius * 4 : radius * 2), r = hole[0], center = true, $fn=20);
+					translate([0, hole[1], ((hole[3] == true) ? 0 : sectionSize / 2)]) {
+						cylinder(h = ((hole[3] == true) ? sectionSize * 2 : sectionSize), r = hole[0], center = true, $fn=20);
 					}
 				}
 			} else if (axis == "z") {
 				rotate(a = 90, v = [1, 0, 0]) {
 					rotate(a = hole[2], v = [0, 1, 0]) {
-						translate([0, hole[1], ((hole[3] == true) ? 0 : radius)]) {
-							cylinder(h = ((hole[3] == true) ? radius * 4 : radius * 2), r = hole[0], center = true, $fn=20);
+						translate([0, hole[1], ((hole[3] == true) ? 0 : sectionSize / 2)]) {
+							cylinder(h = ((hole[3] == true) ? sectionSize * 2 : sectionSize), r = hole[0], center = true, $fn=20);
 						}
 					}
 				}
@@ -327,14 +382,14 @@ module sd_aluminiumAngularSupport(l1, l2, thickness, depth)
  * side
  * \param length the length of the rod from the non-bent tip to the center of
  *               the bending
- * \param hookLength the length of the bent part of the rod rom the center of
+ * \param hookLength the length of the bent part of the rod from the center of
  *                   the bending to the tip
  * \param radius the radius of the aluminium rod
  */
 module sd_aluminiumHook(length, hookLength, radius)
 {
 	union() {
-		sd_filledAluminiumRod(length, radius, "x");
+		sd_filledAluminiumRod(length, radius * 2, "round", "x");
 		// At the bending we put a quarted of a sphere
 		translate([length / 2, 0, 0]) {
 			color(sd_aluminiumColor) {
@@ -342,7 +397,180 @@ module sd_aluminiumHook(length, hookLength, radius)
 			}
 		}
 		translate([length / 2, 0, hookLength / 2]) {
-			sd_filledAluminiumRod(hookLength, radius, "z");
+			sd_filledAluminiumRod(hookLength, radius * 2, "round", "z");
+		}
+	}
+}
+
+/**
+ * \brief Creates an aluminium l beam
+ *
+ * Creates an aluminium l beam along the given axis. The origin of the frame of
+ * reference of the l bema if in the center along the external junction of the
+ * two sides. Which is side1 and side2 depends on the axis:
+ * 	- if axis is "x", side1 is on the xz plane and side2 on the xy plane;
+ * 	- if axis is "y", side1 is on the yz plane and side2 on the xy plane;
+ * 	- if axis is "z", side1 is on the xz plane and side2 on the yz plane.
+ * \param length the length of the l beam
+ * \param side1 the external dimension of the first side of the l beam
+ * \param side2 the external dimension of the second side of the l beam
+ * \param thickness the thickness of the material of the l beam
+ * \param axis the axis along which the l beam is created. This is either "x",
+ *             "y" or "z"
+ */
+module sd_aluminiumLBeam(length, side1, side2, thickness, axis = "x")
+{
+	color(sd_aluminiumColor) {
+		if (axis == "x") {
+			union() {
+				translate([0, thickness / 2, side1 / 2]) {
+					cube([length, thickness, side1], center = true);
+				}
+				translate([0, side2 / 2, thickness / 2]) {
+					cube([length, side2, thickness], center = true);
+				}
+			}
+		} else if (axis == "y") {
+			union() {
+				translate([thickness / 2, 0, side1 / 2]) {
+					cube([thickness, length, side1], center = true);
+				}
+				translate([side2 / 2, 0, thickness / 2]) {
+					cube([side2, length, thickness], center = true);
+				}
+			}
+		} else if (axis == "z") {
+			union() {
+				translate([side1 / 2, thickness / 2, 0]) {
+					cube([side1, thickness, length], center = true);
+				}
+				translate([thickness / 2, side2 / 2, 0]) {
+					cube([thickness, side2, length], center = true);
+				}
+			}
+		} else {
+			echo("Wrong axis specification in sd_aluminiumLBeam");
+		}
+	}
+}
+
+/**
+ * \brief Creates an aluminium l beam with holes and cuts
+ *
+ * Creates an aluminium l beam along the given axis, as the sd_aluminiumLBeam
+ * modules. It is also possible to specify the position of round holes and
+ * rectangular cuts along one side
+ * \param length the length of the l beam
+ * \param side1 the external dimension of the first side of the l beam
+ * \param side2 the external dimension of the second side of the l beam
+ * \param thickness the thickness of the material of the l beam
+ * \param axis the axis along which the l beam is created. This is either "x",
+ *             "y" or "z"
+ * \param holes the list of holes. Each element is the list is a list of four
+ *              elements: [s, x, y, r] where s is either 1 or 2 to indicate that
+ *              the hole is on the first or second side, respectively, x and y
+ *              are the coordinates of the center of the hole in the frame of
+ *              reference of the given side (the x axis is parallel to the l
+ *              beam main axis, y is perpendicular to x and lies on the side
+ *              external face and the origin is in the center of the side
+ *              external face) and r is the radius of the hole
+ * \param cuts
+ */
+module sd_aluminiumLBeamWithHolesAndCuts(length, side1, side2, thickness, axis = "x", holes = [], cuts = [])
+{
+	difference() {
+		sd_aluminiumLBeam(length, side1, side2, thickness, axis);
+		for (hole = holes) {
+			if (hole[0] == 1) {
+				if (axis == "x") {
+					rotate(a = 90, v = [1, 0, 0]) {
+						translate([hole[1], hole[2] + side1 / 2, -thickness / 2]) {
+							cylinder(h = thickness * 2, r = hole[3], center = true, $fn=20);
+						}
+					}
+				} else if (axis == "y") {
+					rotate(a = 90, v = [0, 1, 0]) {
+						translate([-hole[2] - side1 / 2, hole[1], thickness / 2]) {
+							cylinder(h = thickness * 2, r = hole[3], center = true, $fn=20);
+						}
+					}
+				} else if (axis == "z") {
+					rotate(a = 90, v = [1, 0, 0]) {
+						translate([hole[2] + side1 / 2, hole[1], -thickness / 2]) {
+							cylinder(h = thickness * 2, r = hole[3], center = true, $fn=20);
+						}
+					}
+				} else {
+					echo("Wrong axis specification in sd_aluminiumLBeamWithHolesAndCuts");
+				}
+			} else if (hole[0] == 2) {
+				if (axis == "x") {
+					translate([hole[1], hole[2] + side2 / 2, thickness / 2]) {
+						cylinder(h = thickness * 2, r = hole[3], center = true, $fn=20);
+					}
+				} else if (axis == "y") {
+					translate([hole[2] + side2 / 2, hole[1], thickness / 2]) {
+						cylinder(h = thickness * 2, r = hole[3], center = true, $fn=20);
+					}
+				} else if (axis == "z") {
+					rotate(a = 90, v = [0, 1, 0]) {
+						translate([-hole[1], hole[2] + side2 / 2, thickness / 2]) {
+							cylinder(h = thickness * 2, r = hole[3], center = true, $fn=20);
+						}
+					}
+				} else {
+					echo("Wrong axis specification in sd_aluminiumLBeamWithHolesAndCuts");
+				}
+			} else {
+				echo("Wrong hole side specification in sd_aluminiumLBeamWithHolesAndCuts");
+			}
+		}
+		for (cut = cuts) {
+			TODO, description first
+		}
+	}
+}
+
+/**
+ * \brief A bolt with hexagonal head
+ *
+ * The origin of the bolt is between the head and the remaining part, on the
+ * main axis. The main axis is z, with the head on the negative side
+ * \param radius the radius of the bolt
+ * \param length the length of the bold excluding the head
+ * \param headRadius the radius of the head od the bolt (i.e. the distance from
+ *                   the center to a vertex of the hexagon)
+ * \param headThickness the thickness of the head of the bolt
+ */
+module sd_bolt(radius, length, headRadius, headThickness)
+{
+	color(sd_mountingPartsColor) {
+		// First creating the head
+		translate([0, 0, -headThickness]) {
+			cylinder(h = headThickness, r = headRadius, center = false, $fn = 6);
+		}
+		// Now creating the remaining part
+		cylinder(h = length, r = radius, center = false);
+	}
+}
+
+/**
+ * \brief An hexagonal nut
+ *
+ * The min axis is the z axis, the origin is on one side of the nut, along the
+ * main axis. The nut "grows" from the origin towards the positive z axis
+ * \param internalRadius the internal radius of the nut
+ * \param externalRadius the external radius of the nut (i.e. the distance from
+ *                       the center to a vertex of the hexagon)
+ * \param thickness the thickness of the nut
+ */
+module sd_nut(internalRadius, externalRadius, thickness) {
+	color(sd_mountingPartsColor) {
+		difference() {
+			cylinder(h = thickness, r = externalRadius, center = false, $fn = 6);
+			translate([0, 0, thickness / 2]) {
+				cylinder(h = thickness * 2, r = internalRadius, center = true);
+			}
 		}
 	}
 }
@@ -366,19 +594,35 @@ translate([100, 0, 0]) {
 }
 
 translate([-100, 0, 0]) {
-	sd_filledAluminiumRod(100, 5, "z");
+	sd_filledAluminiumRod(90, 10, "round", "z");
+}
+
+translate([-100, 0, 100]) {
+	sd_filledAluminiumRod(90, 10, "square", "z");
 }
 
 translate([-100, -100, 0]) {
-	sd_emptyAluminiumRod(100, 5, 0.1, "x");
+	sd_emptyAluminiumRod(100, 10, 0.1, "round", "x");
+}
+
+translate([-100, -100, 100]) {
+	sd_emptyAluminiumRod(100, 10, 0.1, "square", "x");
 }
 
 translate([-100, 100, 0]) {
-	sd_filledAluminiumRodWithHoles(90, 5, "y", [[2, 30, 45]]);
+	sd_filledAluminiumRodWithHoles(90, 10, "round", "y", [[2, 30, 45]]);
+}
+
+translate([-100, 100, 100]) {
+	sd_filledAluminiumRodWithHoles(90, 10, "square", "y", [[2, 30, 45]]);
 }
 
 translate([0, -100, 0]) {
-	sd_emptyAluminiumRodWithHoles(90, 5, 0.1, "z", [[2, 30, 45, false]]);
+	sd_emptyAluminiumRodWithHoles(90, 10, 0.1, "round", "z", [[2, 30, 45, false]]);
+}
+
+translate([0, -100, 100]) {
+	sd_emptyAluminiumRodWithHoles(90, 10, 0.1, "square", "z", [[2, 30, 45, false]]);
 }
 
 translate([100, -100, 0]) {
@@ -387,4 +631,20 @@ translate([100, -100, 0]) {
 
 translate([100, 100, 0]) {
 	sd_aluminiumHook(30, 10, 3);
+}
+
+translate([0, 100, 100]) {
+	sd_aluminiumLBeam(100, 10, 20, 1, "x");
+}
+
+translate([100, 0, 100]) {
+	! sd_aluminiumLBeamWithHolesAndCuts(100, 10, 20, 1, "x", [[1, -40, -2.5, 0.5], [2, 30, 5, 1]], []);
+}
+
+translate([100, 100, 100]) {
+	sd_bolt(5, 30, 10, 4);
+}
+
+translate([100, -100, 100]) {
+	sd_nut(5, 10, 4);
 }
