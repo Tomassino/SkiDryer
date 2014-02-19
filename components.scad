@@ -466,7 +466,7 @@ module sd_aluminiumLBeam(length, side1, side2, thickness, axis = "x")
  * \param thickness the thickness of the material of the l beam
  * \param axis the axis along which the l beam is created. This is either "x",
  *             "y" or "z"
- * \param holes the list of holes. Each element is the list is a list of four
+ * \param holes the list of holes. Each element in the list is a list of four
  *              elements: [s, x, y, r] where s is either 1 or 2 to indicate that
  *              the hole is on the first or second side, respectively, x and y
  *              are the coordinates of the center of the hole in the frame of
@@ -474,7 +474,11 @@ module sd_aluminiumLBeam(length, side1, side2, thickness, axis = "x")
  *              beam main axis, y is perpendicular to x and lies on the side
  *              external face and the origin is in the center of the side
  *              external face) and r is the radius of the hole
- * \param cuts
+ * \param cuts the list of cuts. Each element in the list is a list of four
+ *             elements: [s, p, d, w] where s is either 1 or 2 to indicate that
+ *             the cut is on the first or second side, respectively, p is the
+ *             position of the center of the cut along the main axis, d is the
+ *             depth of the cut and w is the width of the cut
  */
 module sd_aluminiumLBeamWithHolesAndCuts(length, side1, side2, thickness, axis = "x", holes = [], cuts = [])
 {
@@ -526,7 +530,41 @@ module sd_aluminiumLBeamWithHolesAndCuts(length, side1, side2, thickness, axis =
 			}
 		}
 		for (cut = cuts) {
-			TODO, description first
+			if (cut[0] == 1) {
+				if (axis == "x") {
+					translate([cut[1], thickness / 2, side1]) {
+						cube([cut[3], thickness * 2, cut[2] * 2], center = true);
+					}
+				} else if (axis == "y") {
+					translate([thickness / 2, cut[1], side1]) {
+						cube([thickness * 2, cut[3], cut[2] * 2], center = true);
+					}
+				} else if (axis == "z") {
+					translate([side1, thickness / 2, cut[1]]) {
+						cube([cut[2] * 2, thickness * 2, cut[3]], center = true);
+					}
+				} else {
+					echo("Wrong axis specification in sd_aluminiumLBeamWithHolesAndCuts");
+				}
+			} else if (cut[0] == 2) {
+				if (axis == "x") {
+					translate([cut[1], side2, thickness / 2]) {
+						cube([cut[3], cut[2] * 2, thickness * 2], center = true);
+					}
+				} else if (axis == "y") {
+					translate([side2, cut[1], thickness / 2]) {
+						cube([cut[2] * 2, cut[3], thickness * 2], center = true);
+					}
+				} else if (axis == "z") {
+					translate([thickness / 2, side2, cut[1]]) {
+						cube([thickness * 2, cut[2] * 2, cut[3]], center = true);
+					}
+				} else {
+					echo("Wrong axis specification in sd_aluminiumLBeamWithHolesAndCuts");
+				}
+			} else {
+				echo("Wrong cut side specification in sd_aluminiumLBeamWithHolesAndCuts");
+			}
 		}
 	}
 }
@@ -638,7 +676,7 @@ translate([0, 100, 100]) {
 }
 
 translate([100, 0, 100]) {
-	! sd_aluminiumLBeamWithHolesAndCuts(100, 10, 20, 1, "x", [[1, -40, -2.5, 0.5], [2, 30, 5, 1]], []);
+	sd_aluminiumLBeamWithHolesAndCuts(100, 10, 20, 1, "y", [[1, -40, -2.0, 1.5], [2, 30, -2, 3]], [[1, 30, 2.5, 7.5], [2, -40, 5, 15]]);
 }
 
 translate([100, 100, 100]) {
