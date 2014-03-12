@@ -602,13 +602,112 @@ module sd_bolt(radius, length, headRadius, headThickness)
  *                       the center to a vertex of the hexagon)
  * \param thickness the thickness of the nut
  */
-module sd_nut(internalRadius, externalRadius, thickness) {
+module sd_nut(internalRadius, externalRadius, thickness)
+{
 	color(sd_mountingPartsColor) {
 		difference() {
 			cylinder(h = thickness, r = externalRadius, center = false, $fn = 6);
 			translate([0, 0, thickness / 2]) {
 				cylinder(h = thickness * 2, r = internalRadius, center = true);
 			}
+		}
+	}
+}
+
+/**
+ * \brief An hinge joint
+ *
+ * The hinge has two rectangular pieces with a common side and a cylinder with
+ * the main axis along that side. Where the first rectangle lies depends on the
+ * value of the axis parameter (the second rectangle position depends on the
+ * angle):
+ * 	- if axis is "x", the first rectangle lies on the xy;
+ * 	- if axis is "y", the first rectangle lies on the xy;
+ * 	- if axis is "z", the first rectangle lies on the xz.
+ * Each rectangle has a local frame of reference (used when specifying the hole
+ * position) with x being along the main axis (0 is the center, the positive
+ * direction is the positive direction of the rotation axis) and y being
+ * perpendicular to x on the rectangle face (0 is at the intersection with the
+ * local x axis and positive values are towards the rectangle)
+ * \param width is the length of the rotation axis
+ * \param depth is the depth of the two rectangular pieces
+ * \param thickness is the thickness of the two rectangular pieces (this is also
+ *                  the radius of the cylinder
+ * \param angle the angle of the hinge (0 means closed, i.e. the two rectangular
+ *              pieces are one on top of the other). The first rectangle is
+ *              always fixed, the second one is moved
+ * \param axis is the axis to which the rotation axis of the hinge is parallel
+ * \holes1 is the list of holes on the first rectangle. It is a list of lists of
+ *         three elements [x, y, r] where x and y are the coordinates of the
+ *         hole on the first rectangle frame of reference and r is the radius of
+ *         the hole
+ * \holes2 is the list of holes on the second rectangle. The format is like the
+ *         one of holes1 with positions in the frame of reference of the second
+ *         rectangle
+ */
+module sd_aluminiumHinge(width, depth, thickness, angle = 90, axis = "x", holes1 = [], holes2 = [])
+{
+	color(sd_aluminiumColor) {
+		if (axis == "x") {
+			union() {
+				difference() {
+					translate([0, depth / 2, -thickness/ 2]) {
+						cube([width, depth, thickness], center = true);
+					}
+					for (h = holes1) {
+						translate([h[0], h[1], -thickness/ 2]) {
+							cylinder(h = thickness * 2, r = h[2], center = true, $fn = 20);
+						}
+					}
+				}
+				rotate(a = 90, v = [0, 1, 0]) {
+						cylinder(h = width, r = thickness, center = true, $fn = 20);
+				}
+				rotate(a = angle, v = [1, 0, 0]) {
+					difference() {
+						translate([0, depth / 2, thickness / 2]) {
+							cube([width, depth, thickness], center = true);
+						}
+						for (h = holes2) {
+							translate([h[0], h[1], thickness/ 2]) {
+								cylinder(h = thickness * 2, r = h[2], center = true, $fn = 20);
+							}
+						}
+					}
+				}
+			}
+		} else if (axis == "y") {
+			union() {
+				difference() {
+					translate([depth / 2, 0, -thickness/ 2]) {
+						cube([depth, width, thickness], center = true);
+					}
+					for (h = holes1) {
+						translate([h[1], h[0], -thickness/ 2]) {
+							cylinder(h = thickness * 2, r = h[2], center = true, $fn = 20);
+						}
+					}
+				}
+				rotate(a = 90, v = [1, 0, 0]) {
+						cylinder(h = width, r = thickness, center = true, $fn = 20);
+				}
+				rotate(a = angle, v = [0, 1, 0]) {
+					difference() {
+						translate([depth / 2, 0, thickness / 2]) {
+							cube([depth, width, thickness], center = true);
+						}
+						for (h = holes2) {
+							translate([h[1], h[0], thickness/ 2]) {
+								cylinder(h = thickness * 2, r = h[2], center = true, $fn = 20);
+							}
+						}
+					}
+				}
+			}
+		} else if (axis == "z") {
+			cube([side1, thickness, length], center = true);
+		} else {
+			echo("Wrong axis specification in sd_aluminiumHinge");
 		}
 	}
 }
@@ -685,4 +784,8 @@ translate([100, 100, 100]) {
 
 translate([100, -100, 100]) {
 	sd_nut(5, 10, 4);
+}
+
+translate([0, 0, -100]) {
+	!sd_aluminiumHinge(10, 5, 0.1, 67, "y", [[-3, 2.5, 1], [3, 2.5, 1]], [[-3, 2.5, 1], [3, 2.5, 1]]);
 }

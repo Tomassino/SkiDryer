@@ -68,7 +68,7 @@ module sd_externalVerticalBar()
  */
 module sd_horizontalBar()
 {
-	sd_emptyAluminiumRodWithHoles(sd_horizontalBarLength, sd_aluminiumBarSectionSize, sd_aluminiumBarThickness,  sd_aluminiumVerticalBarSection, "x");
+	sd_emptyAluminiumRodWithHoles(sd_horizontalBarLength, sd_aluminiumBarSectionSize, sd_aluminiumBarThickness,  sd_aluminiumHorizontalBarSection, "x");
 }
 
 /**
@@ -206,9 +206,14 @@ sd_aluminiumBarSectionSize = 30;
 sd_aluminiumBarThickness = 1;
 
 /**
- * \brief The external radius of the vertical bar
+ * \brief The section of the vertical bars
  */
 sd_aluminiumVerticalBarSection = "round";
+
+/**
+ * \brief The section of the horizontal bar
+ */
+sd_aluminiumHorizontalBarSection = "round";
 
 /**
  * \brief The length of the vertical bar
