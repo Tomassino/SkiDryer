@@ -18,10 +18,7 @@ use <components.scad>;
  */
 module sd_lowerBase()
 {
-	function sd_holeAtPos(x, y) = [x * sd_baseWidth / 2, y * sd_baseDepth / 2, (sd_legWidth - sd_legGrooveDepth) * 2, (sd_legWidth - sd_legGrooveDepth) * 2];
-
-	// If we had the concat builtin to concatenate vectors this could perhaps be written in a more elegant way
-	sd_woodenPlaneWithHoles([sd_baseWidth, sd_baseDepth, sd_planesThickness], [sd_holeAtPos(1, 1), sd_holeAtPos(-1, 1), sd_holeAtPos(1, -1), sd_holeAtPos(-1, -1)]);
+	sd_woodenPlaneWithHoles([sd_baseWidth, sd_baseDepth, sd_planesThickness]);
 }
 
 /**
@@ -35,13 +32,174 @@ module sd_upperBase()
 }
 
 /**
- * \brief A leg of the SkiDryer
+ * \brief A leg of the SkiDryer under the lower base
  */
-module sd_leg()
+module sd_lowerLeg()
 {
-	sd_grooveProsition = -((sd_totalLength / 2) - sd_heightFromGround - (sd_planesThickness / 2));
-	sd_woodenLeg(sd_legWidth, sd_totalLength, [[sd_planesThickness - sd_epsilon, sd_legGrooveDepth - sd_epsilon, sd_grooveProsition, "x"], [sd_planesThickness - sd_epsilon, sd_legGrooveDepth - sd_epsilon, sd_grooveProsition, "y"]]);
+	sd_mainAxis("z") {
+		sd_woodenLeg(sd_legWidth, sd_heightFromGround);
+	}
 }
+
+/**
+ * \brief A leg of the SkiDryer between the lower and upper base
+ *
+ * \param angle the angle of the leg
+ * \param rotateAroundX if true the leg rotate around the global x axis,
+ *                      otherwise around the global y axis
+ */
+module sd_upperLeg(angle, rotateAroundX)
+{
+	if (rotateAroundX == true) {
+		rotate(a = angle, v = [1, 0, 0]) {
+			sd_mainAxis("z") {
+				sd_woodenLeg(sd_legWidth, sd_basesDistance);
+			}
+		}
+	} else {
+		rotate(a = angle, v = [0, 1, 0]) {
+			sd_mainAxis("z") {
+				sd_woodenLeg(sd_legWidth, sd_basesDistance);
+			}
+		}
+	}
+}
+
+/**
+ * \brief The hinge between the upper leg and the lower base
+ */
+module sd_upperLegLowerBaseHinge(angle)
+{
+	rotate(a = 180, v = [0, 0, 1]) {
+		sd_aluminiumHinge(sd_legWidth, sd_hingeDepth, sd_hingeThickness, angle);
+	}
+}
+
+/**
+ * \brief The hinge between the upper leg and the lower base
+ */
+module sd_upperLegUpperBaseHinge(angle)
+{
+	rotate(a = 180, v = [0, 1, 0]) {
+		sd_aluminiumHinge(sd_legWidth, sd_hingeDepth, sd_hingeThickness, angle);
+	}
+}
+
+/**
+ * \brief A small value used when it is needed to make the shape simple
+ */
+sd_epsilon = 0.01;
+
+/**
+ * \brief The width of the base
+ */
+sd_baseWidth = 1000;
+
+/**
+ * \brief The depth of the base
+ */
+sd_baseDepth = 500;
+
+/**
+ * \brief The thickness of wooden planes
+ */
+sd_planesThickness = 30;
+
+/**
+ * \brief The position along the width of the center of the hole for the skis
+ *        in the upper base as a fraction of base width
+ */
+sd_skiHoleRelPos = 0.3;
+
+/**
+ * \brief The (absolute) position along the width of the center of the hole for
+ *        the skis in the upper base as a fraction of base width
+ */
+sd_skiHolePos = sd_skiHoleRelPos * sd_baseWidth;
+
+/**
+ * \brief The width of the ski hole
+ */
+sd_skiHoleWidth = 100;
+
+/**
+ * \brief The depth of the ski hole as a proportion of the upper base depth
+ */
+sd_skiHoleRelDepth = 0.6;
+
+/**
+ * \brief The (absolute) depth of the ski hole
+ */
+sd_skiHoleDepth = sd_skiHoleRelDepth * sd_baseDepth;
+
+/**
+ * \brief The distance beween the upper and the lower base
+ *
+ * This is the distance between the upper part of the lower base and the lower
+ * part of the upper base
+ */
+sd_basesDistance = 300;
+
+/**
+ * \brief The distance of the lower base from the ground
+ *
+ * This is the distance from the lower part of the lower base to the ground
+ */
+sd_heightFromGround = 100;
+
+/**
+ * \brief The dimension of the side of each leg
+ */
+sd_legWidth = 60;
+
+/**
+ * \brief The depth of hinges
+ */
+sd_hingeDepth = sd_legWidth;
+
+/**
+ * \brief The thickness of hinges
+ */
+sd_hingeThickness = 2;
+
+/**
+ * \brief The distance of the legs from the border of the long side of the bases
+ */
+sd_legsDistanceFromBorderLongSide = 65;
+
+/**
+ * \brief The distance of the legs from the border of the short side of the
+ *        bases
+ */
+sd_legsDistanceFromBorderShortSide = 0;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /**
  * \brief The internal vertical bar to hang stuffs
@@ -119,76 +277,9 @@ module sd_hookOnVerticalBar()
 }
 
 /**
- * \brief A small value used when it is needed to make the shape simple
- */
-sd_epsilon = 0.01;
-
-/**
- * \brief The width of the base
- */
-sd_baseWidth = 1000;
-
-/**
- * \brief The depth of the base
- */
-sd_baseDepth = 500;
-
-/**
- * \brief The thickness of wooden planes
- */
-sd_planesThickness = 30;
-
-/**
- * \brief The position along the width of the center of the hole for the skis
- *        in the upper base as a fraction of base width
- */
-sd_skiHoleRelPos = 0.3;
-
-/**
- * \brief The (absolute) position along the width of the center of the hole for
- *        the skis in the upper base as a fraction of base width
- */
-sd_skiHolePos = sd_skiHoleRelPos * sd_baseWidth;
-
-/**
- * \brief The width of the ski hole
- */
-sd_skiHoleWidth = 100;
-
-/**
- * \brief The depth of the ski hole as a proportion of the upper base depth
- */
-sd_skiHoleRelDepth = 0.6;
-
-/**
- * \brief The (absolute) depth of the ski hole
- */
-sd_skiHoleDepth = sd_skiHoleRelDepth * sd_baseDepth;
-
-/**
- * \brief The distance beween the upper and the lower base
- *
- * This is the distance between the upper part of the lower base and the lower
- * part of the upper base
- */
-sd_basesDistance = 300;
-
-/**
- * \brief The distance of the lower base from the ground
- *
- * This is the distance from the lower part of the lower base to the ground
- */
-sd_heightFromGround = 100;
-
-/**
  * \brief The total length of the legs
  */
 sd_totalLength = sd_basesDistance + sd_planesThickness + sd_heightFromGround;
-
-/**
- * \brief The dimension of the side of each leg
- */
-sd_legWidth = 60;
 
 /**
  * \brief The dimension of the groove of each leg for mounting on the lower base
@@ -327,40 +418,58 @@ sd_upperSkiSupportsPositions = [500, 850, 1200];
 
 // The following lines are left here as an example
 
-* sd_lowerBase();
+// sd_lowerBase();
+//
+// translate([0, 0, sd_basesDistance]) {
+// 	sd_upperBase();
+// }
+//
+// translate([0, sd_baseWidth, 0]) {
+// 	sd_lowerLeg();
+// }
+//
+// translate([0, -sd_baseWidth, 0]) {
+// 	sd_upperLeg(45, true);
+// }
+//
+// translate([sd_baseWidth, -sd_baseWidth, 0]) {
+// 	sd_upperLegLowerBaseHinge(45);
+// }
+//
+// translate([-sd_baseWidth, -sd_baseWidth, 0]) {
+// 	sd_upperLegUpperBaseHinge(45);
+// }
 
-* translate([0, 0, sd_basesDistance]) {
-	sd_upperBase();
-}
 
-* translate([0, sd_baseWidth, 0]) {
-	sd_leg();
-}
 
-* translate([sd_baseWidth + sd_aluminiumBarSectionSize * 10, 0, 0]) {
-	sd_internalVerticalBar();
-}
 
-* translate([-sd_baseWidth - sd_aluminiumBarSectionSize * 10, -sd_baseWidth, 0]) {
-	sd_externalVerticalBar();
-}
 
-* translate([0, -sd_baseWidth, 0]) {
-	sd_horizontalBar();
-}
 
-* translate([-sd_baseWidth - sd_verticalBarLowerBaseSupportLongSide * 2, 0, 0]) {
-	sd_verticalBarLowerBaseSupport();
-}
 
-* translate([sd_baseWidth + sd_aluminiumBarSectionSize * 10, -sd_baseWidth, 0]) {
-	sd_lowerSkiSupport();
-}
-
-* translate([sd_baseWidth + sd_aluminiumBarSectionSize * 10, sd_baseWidth, 0]) {
-	sd_upperSkiSupport();
-}
-
-* translate([-sd_baseWidth - sd_aluminiumBarSectionSize * 10, sd_baseWidth, 0]) {
-	sd_hookOnVerticalBar();
-}
+// translate([sd_baseWidth + sd_aluminiumBarSectionSize * 10, 0, 0]) {
+// 	sd_internalVerticalBar();
+// }
+//
+// translate([-sd_baseWidth - sd_aluminiumBarSectionSize * 10, -sd_baseWidth, 0]) {
+// 	sd_externalVerticalBar();
+// }
+//
+// translate([0, -sd_baseWidth, 0]) {
+// 	sd_horizontalBar();
+// }
+//
+// translate([-sd_baseWidth - sd_verticalBarLowerBaseSupportLongSide * 2, 0, 0]) {
+// 	sd_verticalBarLowerBaseSupport();
+// }
+//
+// translate([sd_baseWidth + sd_aluminiumBarSectionSize * 10, -sd_baseWidth, 0]) {
+// 	sd_lowerSkiSupport();
+// }
+//
+// translate([sd_baseWidth + sd_aluminiumBarSectionSize * 10, sd_baseWidth, 0]) {
+// 	sd_upperSkiSupport();
+// }
+//
+// translate([-sd_baseWidth - sd_aluminiumBarSectionSize * 10, sd_baseWidth, 0]) {
+// 	sd_hookOnVerticalBar();
+// }
