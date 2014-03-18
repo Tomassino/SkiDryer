@@ -67,22 +67,54 @@ module sd_upperLeg(angle, rotateAroundX)
 
 /**
  * \brief The hinge between the upper leg and the lower base
+ *
+ * \param angle the angle of the hinge
+ * \param rotateAroundX if true the hinge axis is parallel to the global x axis,
+ *                      otherwise to the global y axis
  */
-module sd_upperLegLowerBaseHinge(angle)
+module sd_upperLegLowerBaseHinge(angle, rotateAroundX)
 {
-	rotate(a = 180, v = [0, 0, 1]) {
-		sd_aluminiumHinge(sd_legWidth, sd_hingeDepth, sd_hingeThickness, angle);
+	if (rotateAroundX == true) {
+		rotate(a = 180, v = [0, 0, 1]) {
+			sd_aluminiumHinge(sd_legWidth, sd_hingeDepth, sd_hingeThickness, angle);
+		}
+	} else {
+		rotate(a = 270, v = [0, 0, 1]) {
+			sd_aluminiumHinge(sd_legWidth, sd_hingeDepth, sd_hingeThickness, angle);
+		}
 	}
 }
 
 /**
  * \brief The hinge between the upper leg and the lower base
+ *
+ * \param angle the angle of the hinge
+ * \param rotateAroundX if true the hinge axis is parallel to the global x axis,
+ *                      otherwise to the global y axis
  */
-module sd_upperLegUpperBaseHinge(angle)
+module sd_upperLegUpperBaseHinge(angle, rotateAroundX)
 {
-	rotate(a = 180, v = [0, 1, 0]) {
-		sd_aluminiumHinge(sd_legWidth, sd_hingeDepth, sd_hingeThickness, angle);
+	if (rotateAroundX == true) {
+		rotate(a = 180, v = [0, 1, 0]) {
+			sd_aluminiumHinge(sd_legWidth, sd_hingeDepth, sd_hingeThickness, angle);
+		}
+	} else {
+		rotate(a = 90, v = [0, 0, 1]) {
+			rotate(a = 180, v = [0, 1, 0]) {
+				sd_aluminiumHinge(sd_legWidth, sd_hingeDepth, sd_hingeThickness, angle);
+			}
+		}
 	}
+}
+
+/**
+ * \brief The lower support for skis
+ *
+ * This is a simple wooden stick on the lower base
+ */
+module sd_lowerSkiSupport()
+{
+	sd_woodenStick(sd_lowerSkiSupportSide, sd_lowerSkiSupportSide, sd_skiHoleDepth);
 }
 
 /**
@@ -165,13 +197,20 @@ sd_hingeThickness = 2;
 /**
  * \brief The distance of the legs from the border of the long side of the bases
  */
-sd_legsDistanceFromBorderLongSide = 65;
+sd_legsDistanceFromBorderAlongNonRotationAxis = 65;
 
 /**
  * \brief The distance of the legs from the border of the short side of the
  *        bases
  */
-sd_legsDistanceFromBorderShortSide = 0;
+sd_legsDistanceFromBorderAlongRotationAxis = 0;
+
+/**
+ * \brief The side of the lower ski support
+ *
+ * The lower ski support has a square section
+ */
+sd_lowerSkiSupportSide = sd_legWidth;
 
 
 
@@ -238,16 +277,6 @@ module sd_horizontalBar()
 module sd_verticalBarLowerBaseSupport()
 {
 	sd_woodenPlaneWithHoles([sd_verticalBarLowerBaseSupportShortSide, sd_verticalBarLowerBaseSupportLongSide, sd_verticalBarLowerBaseSupportThickness], [], [[0, 0, sd_aluminiumBarSectionSize / 2]]);
-}
-
-/**
- * \brief The lower support for skis
- *
- * This is a simple wooden stick on the lower base
- */
-module sd_lowerSkiSupport()
-{
-	sd_woodenStick(sd_lowerSkiSupportSide, sd_lowerSkiSupportSide, sd_skiHoleDepth, false);
 }
 
 /**
