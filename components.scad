@@ -23,6 +23,11 @@ sd_aluminiumColor = "Silver";
 sd_mountingPartsColor = "SteelBlue";
 
 /**
+ * \brief The color used for steel ropes
+ */
+sd_steelRopeColor = "Yellow";
+
+/**
  * \brief Makes the given axis the main axis of the module
  *
  * This function makes the assumption that the main axis of the module to be
@@ -32,14 +37,14 @@ sd_mountingPartsColor = "SteelBlue";
 module sd_mainAxis(axis)
 {
 	if (axis == "x") {
-		child();
+		children();
 	} else if (axis == "y") {
 		rotate(a = 90, v = [0, 0, 1]) {
-			child();
+			children();
 		}
 	} else if (axis == "z") {
 		rotate(a = -90, v = [0, 1, 0]) {
-			child();
+			children();
 		}
 	} else {
 		echo("Wrong axis specification in sd_mainAxis");
@@ -522,6 +527,40 @@ module sd_aluminiumHinge(width, depth, thickness, angle = 90, holes1 = [], holes
 	}
 }
 
+/**
+ * \brief A straight steel rope
+ *
+ * The rope is created along the x axis
+ * \param length the length of the rope
+ * \param section the diameter of the section of the rope
+ */
+module sd_straightSteelRope(length, section)
+{
+	color(sd_steelRopeColor) {
+		rotate(a = 90, v = [0, 1, 0]) {
+			cylinder(h = length, r = section / 2, center = true, $fn=20);
+		}
+	}
+}
+
+/**
+ * \brief A ring made up of steel rope
+ *
+ * The ring is created in the xy plane
+ * \param diameter the internal diameter of the ring
+ * \param section the diameter of the section of the rope
+ */
+module sd_steelRopeRing(diameter, section)
+{
+	color(sd_steelRopeColor) {
+		rotate_extrude($fn = 50) {
+			translate([diameter / 2 + section, 0, 0]) {
+				circle(d = section);
+			}
+		}
+	}
+}
+
 // The following lines are left here as an example
 
 translate([0, 0, 0]) {
@@ -601,4 +640,12 @@ translate([100, -100, 100]) {
 
 translate([0, 0, -100]) {
 	sd_aluminiumHinge(50, 25, 0.5, 67, [[-15, 12.5, 5], [15, 12.5, 5]], [[-15, 12.5, 5], [15, 12.5, 5]]);
+}
+
+translate([100, 0, -100]) {
+	sd_straightSteelRope(80, 2);
+}
+
+translate([100, 100, -100]) {
+	sd_steelRopeRing(40, 2);
 }

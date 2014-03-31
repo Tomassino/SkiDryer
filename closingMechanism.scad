@@ -163,15 +163,64 @@ function sd_upperLegUpperBaseHingePosition(p, rotateAroundX) = [
 	sd_planesThickness + sd_upperLegsDisplacement[2] - sd_hingeThickness];
 
 /**
+ * \brief Returns the position of the upper bolt of the closing mechanism,
+ *        depending on whether the closing mechanism rotates aroud x or y
+ *
+ * \param rotateAroundX if true the closing mechanism for the legs rotates
+ *                      around the x axis, if false around the y axis
+ */
+function upperBoltPosition(rotateAroundX) =
+	(rotateAroundX == true) ?
+		sd_upperBaseLowerFacePos + [-sd_baseWidth / 2 - sd_steelRopeBoltLength / 2, -sd_baseDepth / 2 + sd_steelRopeAttachDistanceFromExtremity, sd_planesThickness / 2] :
+		sd_upperBaseLowerFacePos + [sd_baseWidth / 2 - sd_steelRopeAttachDistanceFromExtremity, -sd_baseDepth / 2 - sd_steelRopeBoltLength / 2, sd_planesThickness / 2];
+
+/**
+ * \brief Returns the position of the lower bolt of the closing mechanism,
+ *        depending on whether the closing mechanism rotates aroud x or y
+ *
+ * \param rotateAroundX if true the closing mechanism for the legs rotates
+ *                      around the x axis, if false around the y axis
+ */
+function lowerBoltPosition(rotateAroundX) =
+	(rotateAroundX == true) ?
+		sd_lowerBaseLowerFacePos + [-sd_baseWidth / 2 - sd_steelRopeBoltLength / 2, sd_baseDepth / 2 - sd_steelRopeAttachDistanceFromExtremity, sd_planesThickness / 2] :
+		sd_lowerBaseLowerFacePos + [-sd_baseWidth / 2 + sd_steelRopeAttachDistanceFromExtremity, -sd_baseDepth / 2 - sd_steelRopeBoltLength / 2, sd_planesThickness / 2];
+
+/**
+ * \brief Returns the position of the steel rope of the closing mechanism
+ *
+ * \param rotateAroundX if true the closing mechanism for the legs rotates
+ *                      around the x axis, if false around the y axis
+ */
+function closingMechanismRopePosition(rotateAroundX) =
+	(rotateAroundX == true) ?
+		upperBoltPosition(rotateAroundX) + [sd_steelRopeBoltLength / 4, 0, 0]:
+		upperBoltPosition(rotateAroundX) + [0, sd_steelRopeBoltLength / 4, 0];
+
+/**
+ * \brief Returns the angle of the steel rope of the closing mechanism when the
+ *        skiDryer is open
+ *
+ * \param rotateAroundX if true the closing mechanism for the legs rotates
+ *                      around the x axis, if false around the y axis
+ */
+function closingMechanismRopeAngleWhenOpen(rotateAroundX) =
+	(rotateAroundX == true) ?
+		atan((upperBoltPosition(rotateAroundX)[2] - lowerBoltPosition(rotateAroundX)[2]) / (upperBoltPosition(rotateAroundX)[1] - lowerBoltPosition(rotateAroundX)[1])) :
+		-atan((upperBoltPosition(rotateAroundX)[2] - lowerBoltPosition(rotateAroundX)[2]) / (upperBoltPosition(rotateAroundX)[0] - lowerBoltPosition(rotateAroundX)[0]));
+
+/**
  * \brief Creates the lower part, the one interested by the closing mechanism
  *
  * This construction lacks the aluminium bars to hang stuffs.
  * \param angle the angle of the hinges. 0 means open, 90 means closed (this is
- *              the angle of the leg with the perpendicular to the lower base)
+ *              the angle of the leg with the perpendicular to the lower base).
+ *              When the angle is 0, the mechanism to keep the skiDryer open is
+ *              in place
  * \param rotateAroundX if true the leg rotate around the x axis, otherwise
  *                      around the y axis
  */
-module sd_closingMechanism(angle = 90, rotateAroundX) {
+module sd_closingMechanism(angle = 0, rotateAroundX = true) {
 	// Checking the angle is valid
 	if ((angle < 0) || (angle > 90)) {
 		echo("Wrong angle for che closing mechanism");
@@ -218,9 +267,86 @@ module sd_closingMechanism(angle = 90, rotateAroundX) {
 			}
 		}
 
-// AGGIUNGERE SUPPORTI PER LE VERTICAL BAR
+		// Also placing the supports for the vertical bars on the lower base
+		translate([0, 0, sd_planesThickness + sd_verticalBarLowerBaseSupportThickness / 2]) {
+			translate([sd_externalVerticalBarPosition, 0, 0]) {
+				sd_verticalBarLowerBaseSupport();
+			}
+			translate([sd_internalVerticalBarPosition, 0, 0]) {
+				sd_verticalBarLowerBaseSupport();
+			}
+		}
 
-// INFINE PENSARE AD UN MECCANISMO PER TENERE LO SkiDryer APERTO (AD ESEMPIO UNA BARRA RIGIDA SU UN LATO CHE SI COLLEGA TRA LOWER E UPPER BASE QUANDO LO SkiDryer È APERTO
+		// Putting the mechanism to keep the skiDryer open
+		if (rotateAroundX == true) {
+			// Putting two bolts where the rope to keep the skiDryer open is attached. This is not the final
+			// mechanism
+			translate(upperBoltPosition(rotateAroundX)) {
+				sd_mainAxis("x") {
+					sd_bolt(sd_steelRopeRingsDiameter / 2, sd_steelRopeBoltLength, sd_steelRopeBoltHeadRadius, sd_steelRopeBoltHeadThickness);
+				}
+			}
+			translate(lowerBoltPosition(rotateAroundX)) {
+				sd_mainAxis("x") {
+					sd_bolt(sd_steelRopeRingsDiameter / 2, sd_steelRopeBoltLength, sd_steelRopeBoltHeadRadius, sd_steelRopeBoltHeadThickness);
+				}
+			}
+
+			// Putting the rope of the skiDryer closing mechanism
+			if (angle == 0) {
+				// The rope is simply parallel to the upper base
+				translate(closingMechanismRopePosition(rotateAroundX)) {
+					rotate(a = closingMechanismRopeAngleWhenOpen(rotateAroundX), v = [1, 0, 0]) {
+						rotate(a = -90, v = [0, 0, 1]) {
+							rotate(a = 90, v = [1, 0, 0]) {
+								sd_keepSkiDryerOpenRope(rotateAroundX);
+							}
+						}
+					}
+				}
+			} else {
+				// The rope is simply parallel to the upper base
+				translate(closingMechanismRopePosition(rotateAroundX)) {
+					rotate(a = -90, v = [0, 0, 1]) {
+						rotate(a = 90, v = [1, 0, 0]) {
+							sd_keepSkiDryerOpenRope(rotateAroundX);
+						}
+					}
+				}
+			}
+		} else {
+			// Putting two bolts where the rope to keep the skiDryer open is attached. This is not the final
+			// mechanism
+			translate(upperBoltPosition(rotateAroundX)) {
+				sd_mainAxis("y") {
+					sd_bolt(sd_steelRopeRingsDiameter / 2, sd_steelRopeBoltLength, sd_steelRopeBoltHeadRadius, sd_steelRopeBoltHeadThickness);
+				}
+			}
+			translate(lowerBoltPosition(rotateAroundX)) {
+				sd_mainAxis("y") {
+					sd_bolt(sd_steelRopeRingsDiameter / 2, sd_steelRopeBoltLength, sd_steelRopeBoltHeadRadius, sd_steelRopeBoltHeadThickness);
+				}
+			}
+
+			// Putting the rope of the skiDryer closing mechanism
+			if (angle == 0) {
+				// The rope is in place to keep the skiDryer open
+				translate(closingMechanismRopePosition(rotateAroundX)) {
+					rotate(a = closingMechanismRopeAngleWhenOpen(rotateAroundX), v = [0, 1, 0]) {
+						rotate(a = 90, v = [1, 0, 0]) {
+							sd_keepSkiDryerOpenRope(rotateAroundX);
+						}
+					}
+				}
+			} else {
+				// The rope is simply parallel to the upper base
+				translate(closingMechanismRopePosition(rotateAroundX)) {
+					rotate(a = 90, v = [1, 0, 0]) {
+						sd_keepSkiDryerOpenRope(rotateAroundX);
+					}
+				}
+			}
+		}
 	}
 }
 
@@ -232,7 +358,7 @@ sd_rotateAroundX = false;
 /**
  * \brief The angle of the closing mechanism
  */
-sd_closingMechanismAngle = 90 * $t;
+sd_closingMechanismAngle = 90 * (($t < 0.1) ? 0 : ($t > 0.9) ? 1 : ($t - 0.1) / 0.8);
 
 /**
  * \brief The position of the lower part of the lower base

@@ -28,7 +28,13 @@ module sd_lowerBase()
  */
 module sd_upperBase()
 {
-	sd_woodenPlaneWithHoles([sd_baseWidth, sd_baseDepth, sd_planesThickness], [[sd_skiHolePos, 0, sd_skiHoleWidth, sd_skiHoleDepth]], [[sd_externalVerticalBarPosition, 0, sd_aluminiumBarSectionSize / 2], [sd_internalVerticalBarPosition, 0, sd_aluminiumBarSectionSize / 2]]);
+	if (sd_aluminiumVerticalBarSection == "round") {
+		sd_woodenPlaneWithHoles([sd_baseWidth, sd_baseDepth, sd_planesThickness], [[sd_skiHolePos, 0, sd_skiHoleWidth, sd_skiHoleDepth]], [[sd_externalVerticalBarPosition, 0, sd_aluminiumBarSectionSize / 2], [sd_internalVerticalBarPosition, 0, sd_aluminiumBarSectionSize / 2]]);
+	} else if (sd_aluminiumVerticalBarSection == "square") {
+		sd_woodenPlaneWithHoles([sd_baseWidth, sd_baseDepth, sd_planesThickness], [[sd_skiHolePos, 0, sd_skiHoleWidth, sd_skiHoleDepth], [sd_externalVerticalBarPosition, 0, sd_aluminiumBarSectionSize, sd_aluminiumBarSectionSize], [sd_internalVerticalBarPosition, 0, sd_aluminiumBarSectionSize, sd_aluminiumBarSectionSize]], []);
+	} else {
+		echo("Wrong section specification in sd_upperBase");
+	}
 }
 
 /**
@@ -115,6 +121,52 @@ module sd_upperLegUpperBaseHinge(angle, rotateAroundX)
 module sd_lowerSkiSupport()
 {
 	sd_woodenStick(sd_lowerSkiSupportSide, sd_lowerSkiSupportSide, sd_skiHoleDepth);
+}
+
+/**
+ * \brief The support of the vertical bar on the lower base
+ *
+ * This is a wooden cube with a hole in the center which is put on the lower
+ * base in which the vertical bar is inserted
+ */
+module sd_verticalBarLowerBaseSupport()
+{
+	if (sd_aluminiumVerticalBarSection == "round") {
+		sd_woodenPlaneWithHoles([sd_verticalBarLowerBaseSupportShortSide, sd_verticalBarLowerBaseSupportLongSide, sd_verticalBarLowerBaseSupportThickness], [], [[0, 0, sd_aluminiumBarSectionSize / 2]]);
+	} else if (sd_aluminiumVerticalBarSection == "square") {
+		sd_woodenPlaneWithHoles([sd_verticalBarLowerBaseSupportShortSide, sd_verticalBarLowerBaseSupportLongSide, sd_verticalBarLowerBaseSupportThickness], [[0, 0, sd_aluminiumBarSectionSize, sd_aluminiumBarSectionSize]], []);
+	} else {
+		echo("Wrong section specification in sd_verticalBarLowerBaseSupport");
+	}
+}
+
+/**
+ * \brief A rope to keep the skiDryer open
+ *
+ * This is a rope with two rings at the two extremities. The origin is in the
+ * center of one ring
+ * \param rotateAroundX if true the closing mechanism of the skiDryer rotates
+ *                      around the global x axis, if false around the global y
+ *                      axis
+ */
+module sd_keepSkiDryerOpenRope(rotateAroundX)
+{
+	// The helper function computing the distance between the centers of the two rings at
+	// the extremities of the rope
+	function ropeLength(rX) = sqrt(((rX == true) ? pow(sd_baseDepth - 2 * sd_steelRopeAttachDistanceFromExtremity, 2) : pow(sd_baseWidth - 2 * sd_steelRopeAttachDistanceFromExtremity, 2)) + pow(sd_basesDistance + sd_planesThickness, 2));
+
+	// First placing the straight part
+	translate([-ropeLength(rotateAroundX) / 2, 0, 0]) {
+		sd_straightSteelRope(ropeLength(rotateAroundX) - sd_steelRopeRingsDiameter - sd_steelRopeSection, sd_steelRopeSection);
+	}
+
+	// Now plaing the ring at one end...
+	sd_steelRopeRing(sd_steelRopeRingsDiameter, sd_steelRopeSection);
+
+	// ... finally the ring at the other one end
+	translate([-ropeLength(rotateAroundX), 0, 0]) {
+		sd_steelRopeRing(sd_steelRopeRingsDiameter, sd_steelRopeSection);
+	}
 }
 
 /**
@@ -212,11 +264,76 @@ sd_legsDistanceFromBorderAlongRotationAxis = 0;
  */
 sd_lowerSkiSupportSide = sd_legWidth;
 
+/**
+ * \brief The thickness of the support for the vertical bar on the lower base
+ */
+sd_verticalBarLowerBaseSupportThickness = sd_legWidth;
 
+/**
+ * \brief The short dimension of the support for the vertical bar on the lower
+ *        base
+ *
+ * This is the lengh of the short side, the one parallel to the base long side
+ */
+sd_verticalBarLowerBaseSupportShortSide = 100;
 
+/**
+ * \brief The long dimension of the support for the vertical bar on the lower
+ *        base
+ *
+ * This is the lengh of the long side, the one perpendicular to the base long
+ * side
+ */
+sd_verticalBarLowerBaseSupportLongSide = 150;
 
+/**
+ * \brief The size of the aluminium bar section
+ *
+ * This is the external diameter of the vertical bar if it has a round section,
+ * the length of one side if it is square. See sd_aluminiumVerticalBarSection
+ * for the section kind
+ */
+sd_aluminiumBarSectionSize = 30;
 
+/**
+ * \brief The section of the vertical bars
+ */
+sd_aluminiumVerticalBarSection = "square";
 
+/**
+ * \brief The section of the steel rope to keep the skiDryer open
+ */
+sd_steelRopeSection = 2;
+
+/**
+ * \brief The internal diameter of the rings at the end of the rope to keep the
+ *        skiDryer open
+ */
+sd_steelRopeRingsDiameter = 10;
+
+/**
+ * \brief The distance from the extremities of the plane at which the rope to
+ *        keep the skiDryer open is attached
+ */
+sd_steelRopeAttachDistanceFromExtremity = 50;
+
+/**
+ * \brief The length of the bolts to which the steel rope to keep the skiDryer
+ *        open is attached
+ */
+sd_steelRopeBoltLength = 50;
+
+/**
+ * \brief The radius of the head of the bolt to which the steel rope to keep
+ *        the skiDryer open is attached
+ */
+sd_steelRopeBoltHeadRadius = sd_steelRopeRingsDiameter;
+
+/**
+ * \brief The thickness of the head of the bolt to which the steel rope to keep
+ *        the skiDryer open is attached
+ */
+sd_steelRopeBoltHeadThickness = 10;
 
 
 
@@ -253,11 +370,10 @@ module sd_internalVerticalBar()
  */
 module sd_externalVerticalBar()
 {
-// 	function sd_makeHoleForHook(h) = [sd_hookRadius, h[0], h[1], true];
-// 	function sd_makeHolesForHooks(h, i = 0) = (i == (len(h) - 1) ? sd_makeHoleForHook(h[i]) : concat(sd_makeHoleForHook(h[i]), sd_makeHolesForHooks(h, i + 1)));
-// 	holes = sd_makeHolesForHooks(sd_hookPositionsOnExternalVerticalBar);
-// 	sd_emptyAluminiumRodWithHoles(sd_verticalBarLength, sd_aluminiumBarSectionSize, sd_aluminiumBarThickness,  sd_aluminiumVerticalBarSection, "z", holes);
-	sd_emptyAluminiumRodWithHoles(sd_verticalBarLength, sd_aluminiumBarSectionSize, sd_aluminiumBarThickness,  sd_aluminiumVerticalBarSection, "z", sd_TMP_holes);
+	function sd_makeHoleForHook(h) = [sd_hookRadius, h[0], h[1], true];
+	function sd_makeHolesForHooks(h, i = 0) = (i == (len(h) - 1) ? sd_makeHoleForHook(h[i]) : concat(sd_makeHoleForHook(h[i]), sd_makeHolesForHooks(h, i + 1)));
+	holes = sd_makeHolesForHooks(sd_hookPositionsOnExternalVerticalBar);
+	sd_emptyAluminiumRodWithHoles(sd_verticalBarLength, sd_aluminiumBarSectionSize, sd_aluminiumBarThickness,  sd_aluminiumVerticalBarSection, "z", holes);
 }
 
 /**
@@ -266,17 +382,6 @@ module sd_externalVerticalBar()
 module sd_horizontalBar()
 {
 	sd_emptyAluminiumRodWithHoles(sd_horizontalBarLength, sd_aluminiumBarSectionSize, sd_aluminiumBarThickness,  sd_aluminiumHorizontalBarSection, "x");
-}
-
-/**
- * \brief The support of the vertical bar on the lower base
- *
- * This is a wooden cube with a hole in the center which is put on the lower
- * base in which the vertical bar is inserted
- */
-module sd_verticalBarLowerBaseSupport()
-{
-	sd_woodenPlaneWithHoles([sd_verticalBarLowerBaseSupportShortSide, sd_verticalBarLowerBaseSupportLongSide, sd_verticalBarLowerBaseSupportThickness], [], [[0, 0, sd_aluminiumBarSectionSize / 2]]);
 }
 
 /**
@@ -316,19 +421,9 @@ sd_totalLength = sd_basesDistance + sd_planesThickness + sd_heightFromGround;
 sd_legGrooveDepth = 10;
 
 /**
- * \brief The external radius of the vertical bar
- */
-sd_aluminiumBarSectionSize = 30;
-
-/**
  * \brief The thickness of the vertical bar
  */
 sd_aluminiumBarThickness = 1;
-
-/**
- * \brief The section of the vertical bars
- */
-sd_aluminiumVerticalBarSection = "round";
 
 /**
  * \brief The section of the horizontal bar
@@ -364,28 +459,6 @@ sd_externalVerticalBarPosition = -((sd_baseWidth / 2) - sd_verticalBarDistanceFr
  *        base
  */
 sd_internalVerticalBarPosition = sd_externalVerticalBarPosition + sd_horizontalBarLength - sd_aluminiumBarSectionSize;
-
-/**
- * \brief The thickiness of the support for the vertical bar on the lower base
- */
-sd_verticalBarLowerBaseSupportThickness = 100;
-
-/**
- * \brief The short dimension of the support for the vertical bar on the lower
- *        base
- *
- * This is the lengh of the short side, the one parallel to the base long side
- */
-sd_verticalBarLowerBaseSupportShortSide = 100;
-
-/**
- * \brief The long dimension of the support for the vertical bar on the lower
- *        base
- *
- * This is the lengh of the long side, the one perpendicular to the base long
- * side
- */
-sd_verticalBarLowerBaseSupportLongSide = 150;
 
 /**
  * \brief The side of the lower ski support
@@ -426,17 +499,6 @@ sd_hookRadius = 3;
  * of the lower base and a is the angle around the vertical bar
  */
 sd_hookPositionsOnExternalVerticalBar = [[800, 90], [950, -90], [1200, 0]];
-
-/**
- * \brief The position of holes in the vertical bar for hooks
- *
- * THIS IS NEEDED BECAUSE WE CANNOT CREATE THIS VECTOR FROM
- * sd_hookPositionsOnExternalVerticalBar, WE WOULD NEED A VECTOR CONCATENATION
- * FUNCTION WHICH HAS BEEN ADDED ONLY RECENTY TO OPENSCAD. WHEN WE MOVE TO THE
- * NEW OPENSCAD, THIS CAN BE REMOVED AND COMPUTED IN THE
- * sd_externalVerticalBar() (THE CODE IS NOW COMMENTED OUT)
- */
-sd_TMP_holes = [[sd_hookRadius, 800 - sd_verticalBarLength / 2 - sd_planesThickness, 90 + 90, true], [sd_hookRadius, 950 - sd_verticalBarLength / 2 - sd_planesThickness, -90 + 90, true], [sd_hookRadius, 1200 - sd_verticalBarLength / 2 - sd_planesThickness, 0 + 90, true]];
 
 /**
  * \brief The vector with positions of the upper ski support
