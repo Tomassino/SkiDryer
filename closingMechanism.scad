@@ -231,6 +231,7 @@ module sd_closingMechanism(angle = 0, rotateAroundX = true) {
 		}
 
 		// Placing the lower legs
+// QUI TOGLIERE LOWER LEG FATTE COSÌ E METTERE PIEDINI
 		for (p = [[-1, -1], [-1, 1], [1, 1], [1, -1]]) {
 			translate(sd_legPosition(p, rotateAroundX, -sd_heightFromGround / 2)) {
 				sd_lowerLeg();

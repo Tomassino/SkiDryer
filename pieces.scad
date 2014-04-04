@@ -39,11 +39,18 @@ module sd_upperBase()
 
 /**
  * \brief A leg of the SkiDryer under the lower base
+ *
+ * This are feets under the lower base
  */
 module sd_lowerLeg()
 {
 	sd_mainAxis("z") {
-		sd_woodenLeg(sd_legWidth, sd_heightFromGround);
+		translate([sd_heightFromGround / 2, 0, 0]) {
+			sd_footSupport(sd_footThreadedPartRadius, sd_footSupportThreadedPartThickness, sd_footThreadedPartLength, sd_footSupportRadius, sd_footSupportThickness);
+		}
+		translate([sd_heightFromGround / 2 -sd_footSupportThickness, 0, 0]) {
+			sd_foot(sd_footThreadedPartRadius, sd_footThreadedPartLength, sd_footRadius, sd_footThickness);
+		}
 	}
 }
 
@@ -229,7 +236,42 @@ sd_basesDistance = 300;
  *
  * This is the distance from the lower part of the lower base to the ground
  */
-sd_heightFromGround = 100;
+sd_heightFromGround = 40;
+
+/**
+ * \brief The radius of the threaded part of the foot (and of the support)
+ */
+sd_footThreadedPartRadius = 5;
+
+/**
+ * \brief The radius of the foot
+ */
+sd_footRadius = 15;
+
+/**
+ * \brief The thickness of the foot
+ */
+sd_footThickness = 10;
+
+/**
+ * \brief The thickness of the threaded part of the foot support
+ */
+sd_footSupportThreadedPartThickness = 2;
+
+/**
+ * \brief The radius of the foot support
+ */
+sd_footSupportRadius = sd_footRadius;
+
+/**
+ * \brief The thickness of the foot support
+ */
+sd_footSupportThickness = 2;
+
+/**
+ * \brief The length of the threaded part of both the foot and its support
+ */
+sd_footThreadedPartLength = sd_heightFromGround - sd_footThickness - sd_footSupportThickness;
 
 /**
  * \brief The dimension of the side of each leg

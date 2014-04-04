@@ -25,7 +25,12 @@ sd_mountingPartsColor = "SteelBlue";
 /**
  * \brief The color used for steel ropes
  */
-sd_steelRopeColor = "Yellow";
+sd_steelRopeColor = "Red";
+
+/**
+ * \brief The color used for brass elements
+ */
+sd_brassColor = "Yellow";
 
 /**
  * \brief Makes the given axis the main axis of the module
@@ -561,6 +566,81 @@ module sd_steelRopeRing(diameter, section)
 	}
 }
 
+/**
+ * \brief A brass foot (without the support)
+ *
+ * The origin of the foot is in the center of the top of the bolt. The main axis
+ * is x, with the foot on the negative side
+ * \param radius the radius of the bolt
+ * \param length the length of the bold excluding the foot
+ * \param footRadius the radius of the foot
+ * \param footThickness the thickness of the foot
+ */
+module sd_foot(radius, length, footRadius, footThickness)
+{
+	color(sd_brassColor) {
+		rotate(a = 90, v = [0, 1, 0]) {
+			// First creating the foot
+			translate([0, 0, -footThickness - length]) {
+				cylinder(h = footThickness, r = footRadius, center = false, $fn = 20);
+			}
+			// Now creating the remaining part
+			translate([0, 0, -length]) {
+				cylinder(h = length, r = radius, center = false);
+			}
+		}
+	}
+}
+
+/**
+ * \brief A brass foot support
+ *
+ * The origin of the foot support is in the center of the top of the support.
+ * The main axis is x, with the piece on the negative side
+ * \param innerRadius the inner radius of the "nut"
+ * \param thickness the thickness of the "nut"
+ * \param length the length of the bold excluding the foot
+ * \param supportRadius the radius of the support
+ * \param supportThickness the thickness of the support
+ */
+module sd_footSupport(innerRadius, thickness, length, supportRadius, supportThickness)
+{
+	// The function to compute the distance from the center of the holes for mounting screws
+	function mountingHolesDistanceFromCenter() = innerRadius + thickness + (supportRadius - innerRadius + thickness) / 2;
+	// The function to compute the radius of the holes for mounting screws
+	function mountingHolesRadius() = (supportRadius - innerRadius - thickness) / 6;
+
+	color(sd_brassColor) {
+		rotate(a = 90, v = [0, 1, 0]) {
+			// First creating the support
+			translate([0, 0, -supportThickness]) {
+				difference() {
+					cylinder(h = supportThickness, r = supportRadius, center = false, $fn = 20);
+					// Making three holes for mounting screws
+					translate([mountingHolesDistanceFromCenter(), 0, -supportThickness / 2]) {
+						cylinder(h = 2 * supportThickness, r = mountingHolesRadius(), center = false, $fn = 20);
+					}
+					translate([-mountingHolesDistanceFromCenter() * sin(30), mountingHolesDistanceFromCenter() * cos(30), -supportThickness / 2]) {
+						cylinder(h = 2 * supportThickness, r = mountingHolesRadius(), center = false, $fn = 20);
+					}
+					translate([-mountingHolesDistanceFromCenter() * sin(30), -mountingHolesDistanceFromCenter() * cos(30), -supportThickness / 2]) {
+						cylinder(h = 2 * supportThickness, r = mountingHolesRadius(), center = false, $fn = 20);
+					}
+				}
+			}
+			// Now creating the remaining part
+			translate([0, 0, -supportThickness - length]) {
+				difference() {
+					cylinder(h = length, r = innerRadius + thickness, center = false);
+					translate([0, 0, -length / 2]) {
+						cylinder(h = 2 * length, r = innerRadius, center = false);
+					}
+				}
+			}
+		}
+	}
+}
+
 // The following lines are left here as an example
 
 translate([0, 0, 0]) {
@@ -648,4 +728,12 @@ translate([100, 0, -100]) {
 
 translate([100, 100, -100]) {
 	sd_steelRopeRing(40, 2);
+}
+
+translate([-100, 0, -100]) {
+	sd_foot(5, 20, 20, 5);
+}
+
+translate([-100, 100, -100]) {
+	sd_footSupport(5, 1, 20, 20, 5);
 }
