@@ -13,6 +13,11 @@
 sd_woodColor = "SaddleBrown";
 
 /**
+ * \brief The color used for wood legs (to bettwer visualize them)
+ */
+sd_woodLegsColor = "Peru";
+
+/**
  * \brief The color used for aluminium elements
  */
 sd_aluminiumColor = "Silver";
@@ -123,7 +128,7 @@ module sd_woodenPlaneWithHoles(size, squareHoles = [], roundHoles = [])
  */
 module sd_woodenLeg(section, height, grooves)
 {
-	color(sd_woodColor) {
+	color(sd_woodLegsColor) {
 		difference() {
 			cube([height, section, section], center = true);
 			for (groove = grooves) {
