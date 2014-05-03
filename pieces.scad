@@ -241,12 +241,12 @@ sd_heightFromGround = 40;
 /**
  * \brief The radius of the threaded part of the foot (and of the support)
  */
-sd_footThreadedPartRadius = 5;
+sd_footThreadedPartRadius = 9;
 
 /**
  * \brief The radius of the foot
  */
-sd_footRadius = 15;
+sd_footRadius = 32;
 
 /**
  * \brief The thickness of the foot
@@ -256,12 +256,12 @@ sd_footThickness = 10;
 /**
  * \brief The thickness of the threaded part of the foot support
  */
-sd_footSupportThreadedPartThickness = 2;
+sd_footSupportThreadedPartThickness = 3;
 
 /**
  * \brief The radius of the foot support
  */
-sd_footSupportRadius = sd_footRadius;
+sd_footSupportRadius = 29;
 
 /**
  * \brief The thickness of the foot support
